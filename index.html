@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Proteins | ପ୍ରୋଟିନ | Flip Cards & Quiz</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Noto Sans Oriya', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #ede7f6 0%, #d1c4e9 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+        }
+
+        .mobile-frame {
+            max-width: 480px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(20px);
+            border-radius: 48px;
+            box-shadow: 0 30px 50px rgba(50, 20, 80, 0.2);
+            padding: 18px 14px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            border: 1px solid rgba(140, 100, 200, 0.4);
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 0 8px;
+        }
+
+        .header h1 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #4a148c;
+            background: rgba(209, 196, 233, 0.85);
+            padding: 6px 18px;
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .page-indicator {
+            background: #ede7f6;
+            border-radius: 30px;
+            padding: 6px 16px;
+            font-weight: 600;
+            color: #4a148c;
+            font-size: 0.9rem;
+        }
+
+        .lang-toggle {
+            display: flex;
+            gap: 6px;
+        }
+
+        .lang-btn {
+            background: #d1c4e9;
+            border: none;
+            color: #311b92;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 24px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .lang-btn.active {
+            background: #4a148c;
+            color: white;
+            box-shadow: 0 2px 8px rgba(74, 20, 140, 0.4);
+        }
+
+        .card {
+            background: #fffffffa;
+            border-radius: 32px;
+            padding: 20px 16px;
+            box-shadow: 0 12px 28px rgba(60, 30, 80, 0.1);
+            border: 1px solid #b39ddb;
+            min-height: 380px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .page {
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .page.active {
+            display: flex;
+        }
+
+        .video-thumb-container {
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            cursor: pointer;
+            background: #000;
+        }
+
+        .video-thumb-container img {
+            width: 100%;
+            display: block;
+        }
+
+        .play-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 0, 0, 0.85);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .play-overlay::after {
+            content: '';
+            border: 14px solid transparent;
+            border-left: 24px solid white;
+            margin-left: 4px;
+        }
+
+        .watch-btn {
+            background: #ff0000;
+            color: white;
+            font-weight: bold;
+            padding: 12px;
+            border-radius: 32px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(255,0,0,0.3);
+        }
+
+        .watch-btn svg {
+            width: 22px;
+            height: 22px;
+            fill: white;
+        }
+
+        .flip-container {
+            perspective: 1000px;
+            margin-bottom: 12px;
+        }
+
+        .flipper {
+            position: relative;
+            width: 100%;
+            height: 130px;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+
+        .flipper.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .front, .back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 20px;
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .front {
+            background: #ede7f6;
+            border-left: 6px solid #4a148c;
+            font-weight: 600;
+            font-size: 1rem;
+            color: #311b92;
+        }
+
+        .back {
+            background: #d1c4e9;
+            border-right: 6px solid #4a148c;
+            transform: rotateY(180deg);
+            font-family: 'Noto Sans Oriya', sans-serif;
+            font-size: 0.95rem;
+            color: #311b92;
+            font-weight: 500;
+        }
+
+        .flip-instruction {
+            font-size: 0.7rem;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .quiz-question {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #311b92;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-btn {
+            background: #ede7f6;
+            border: 2px solid #b39ddb;
+            border-radius: 18px;
+            padding: 12px 16px;
+            font-size: 1rem;
+            text-align: left;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .option-btn.selected {
+            background: #d1c4e9;
+            border-color: #4a148c;
+            font-weight: 700;
+        }
+
+        .option-btn.correct {
+            background: #c8e6c9;
+            border-color: #2e7d32;
+        }
+
+        .option-btn.incorrect {
+            background: #ffcdd2;
+            border-color: #c62828;
+        }
+
+        .score-box {
+            display: flex;
+            justify-content: space-between;
+            background: #ede7f6;
+            border-radius: 20px;
+            padding: 10px 16px;
+            font-weight: 600;
+            color: #311b92;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: auto;
+        }
+
+        .nav-btn {
+            background: linear-gradient(135deg, #4a148c, #311b92);
+            border: none;
+            color: white;
+            font-weight: bold;
+            padding: 12px 18px;
+            border-radius: 32px;
+            font-size: 1rem;
+            cursor: pointer;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            box-shadow: 0 4px 12px rgba(49, 27, 146, 0.3);
+            transition: 0.2s;
+        }
+
+        .nav-btn:active {
+            transform: scale(0.95);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            pointer-events: none;
+            background: #888;
+        }
+
+        .restart-btn {
+            background: linear-gradient(135deg, #ffa726, #ef6c00);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+<div class="mobile-frame">
+    <div class="header">
+        <h1>🥚 Proteins</h1>
+        <div class="page-indicator" id="pageTitle">Video</div>
+    </div>
+
+    <div id="langToggles" class="lang-toggle hidden">
+        <button class="lang-btn active" id="langEn">English</button>
+        <button class="lang-btn" id="langOd">ଓଡ଼ିଆ</button>
+    </div>
+
+    <div class="card">
+        <div id="videoPage" class="page active">
+            <div class="video-thumb-container" onclick="window.open('https://www.youtube.com/watch?v=kMg517MHDJs', '_blank')">
+                <img src="https://img.youtube.com/vi/kMg517MHDJs/maxresdefault.jpg" alt="Proteins Video">
+                <div class="play-overlay"></div>
+            </div>
+            <a href="https://www.youtube.com/watch?v=kMg517MHDJs" target="_blank" class="watch-btn">
+                <svg viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+                Watch Video on YouTube
+            </a>
+            <div style="text-align:center; background:#ede7f6; padding:8px; border-radius:20px;">
+                <span style="font-family:'Noto Sans Oriya';">ପ୍ରୋଟିନ ଭିଡିଓ |</span> Proteins Overview
+            </div>
+        </div>
+
+        <div id="conceptPage" class="page">
+            <div style="font-weight:700; text-align:center; font-size:1.1rem;">🔁 Tap cards to flip – English ↔ Odia</div>
+            <div class="flashcard-grid" id="flashcardContainer"></div>
+        </div>
+
+        <div id="mcqPage" class="page">
+            <div class="score-box">
+                <span>MCQ Score: <span id="mcqScoreDisplay">0</span>/30</span>
+                <span>Q <span id="mcqCurrentQ">1</span>/30</span>
+            </div>
+            <div id="mcqQuestionContainer">
+                <div class="quiz-question" id="mcqQuestionText"></div>
+                <div class="options" id="mcqOptions"></div>
+            </div>
+            <div class="nav-buttons" id="mcqNav">
+                <button class="nav-btn" id="mcqNextBtn" disabled>Next ▶</button>
+                <button class="nav-btn restart-btn" id="mcqRestartBtn">↺ Restart</button>
+            </div>
+            <div id="mcqResult" class="hidden" style="text-align:center; padding:20px;">
+                <h3>🎉 MCQ Completed!</h3>
+                <p style="font-size:1.3rem;">Your Score: <strong><span id="mcqFinalScore"></span>/30</strong></p>
+                <button class="nav-btn" id="mcqAgainBtn">Try Again</button>
+            </div>
+        </div>
+
+        <div id="hotPage" class="page">
+            <div class="score-box">
+                <span>HOT Score: <span id="hotScoreDisplay">0</span>/20</span>
+                <span>Q <span id="hotCurrentQ">1</span>/20</span>
+            </div>
+            <div id="hotQuestionContainer">
+                <div class="quiz-question" id="hotQuestionText"></div>
+                <div class="options" id="hotOptions"></div>
+            </div>
+            <div class="nav-buttons" id="hotNav">
+                <button class="nav-btn" id="hotNextBtn" disabled>Next ▶</button>
+                <button class="nav-btn restart-btn" id="hotRestartBtn">↺ Restart</button>
+            </div>
+            <div id="hotResult" class="hidden" style="text-align:center; padding:20px;">
+                <h3>🧠 HOT Completed!</h3>
+                <p style="font-size:1.3rem;">Your Score: <strong><span id="hotFinalScore"></span>/20</strong></p>
+                <button class="nav-btn" id="hotAgainBtn">Try Again</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="nav-buttons">
+        <button class="nav-btn" id="prevPageBtn" disabled>◀ Previous</button>
+        <button class="nav-btn" id="nextPageBtn">Next ▶</button>
+    </div>
+</div>
+
+<script>
+    (function() {
+        const DATA = {
+            english: {
+                concepts: [
+                    { eng: "Proteins", odia: "ପ୍ରୋଟିନ – ଆମିନୋ ଏସିଡର ବଡ଼ ଅଣୁ, ଶରୀରର ବୃଦ୍ଧି ଓ ମରାମତ ପାଇଁ ଅତ୍ୟାବଶ୍ୟକ |" },
+                    { eng: "Amino Acids", odia: "ଆମିନୋ ଏସିଡ – ପ୍ରୋଟିନର ଗଠନ ଏକକ, ୨୦ ପ୍ରକାର |" },
+                    { eng: "Essential Amino Acids", odia: "ଅତ୍ୟାବଶ୍ୟକ ଆମିନୋ ଏସିଡ – ଶରୀର ତିଆରି କରିପାରେନାହିଁ, ଖାଦ୍ୟରୁ ମିଳେ |" },
+                    { eng: "Non‑Essential Amino Acids", odia: "ଅନାବଶ୍ୟକ ଆମିନୋ ଏସିଡ – ଶରୀର ନିଜେ ତିଆରି କରିପାରେ |" },
+                    { eng: "Peptide Bond", odia: "ପେପଟାଇଡ ବନ୍ଧ – ଦୁଇ ଆମିନୋ ଏସିଡକୁ ଯୋଡ଼େ, CO–NH |" },
+                    { eng: "Dipeptide", odia: "ଡାଇପେପଟାଇଡ – ଦୁଇଟି ଆମିନୋ ଏସିଡ ଯୋଡ଼ି ଗଠିତ |" },
+                    { eng: "Polypeptide", odia: "ପଲିପେପଟାଇଡ – ଅନେକ ଆମିନୋ ଏସିଡର ଲମ୍ବା ଶୃଙ୍ଖଳ |" },
+                    { eng: "Primary Structure", odia: "ପ୍ରାଥମିକ ଗଠନ – ଆମିନୋ ଏସିଡର ରୈଖିକ ଅନୁକ୍ରମ |" },
+                    { eng: "Secondary Structure", odia: "ଦ୍ୱିତୀୟ ଗଠନ – ଆଲଫା ହେଲିକ୍ସ ଓ ବିଟା ପତ୍ର (ହାଇଡ୍ରୋଜେନ ବନ୍ଧ) |" },
+                    { eng: "Tertiary Structure", odia: "ତୃତୀୟ ଗଠନ – 3D ଆକାର, ଡାଇସଲଫାଇଡ ବନ୍ଧ ଦ୍ୱାରା ସ୍ଥାୟୀ |" },
+                    { eng: "Quaternary Structure", odia: "ଚତୁର୍ଥ ଗଠନ – ଏକାଧିକ ପଲିପେପଟାଇଡ ଶୃଙ୍ଖଳ (ଯଥା ହିମୋଗ୍ଲୋବିନ) |" },
+                    { eng: "Functions of Proteins", odia: "ପ୍ରୋଟିନର କାର୍ଯ୍ୟ – ଏନଜାଇମ, ହରମୋନ, ଗଠନ, ପରିବହନ, ରୋଗ ପ୍ରତିରୋଧ |" },
+                    { eng: "Sources of Proteins", odia: "ପ୍ରୋଟିନ ଉତ୍ସ – ମାଛ, ମାଂସ, ଅଣ୍ଡା, କ୍ଷୀର, ଡାଲି, ସୋୟାବିନ |" },
+                    { eng: "Protein Deficiency", odia: "ପ୍ରୋଟିନ ଅଭାବ – କ୍ୱାସିଓରକର (ପେଟ ଫୁଲା), ମାରାସମସ (କ୍ଷୀଣତା) |" },
+                    { eng: "Denaturation", odia: "ବିକୃତକରଣ – ତାପ ବା pH ପରିବର୍ତ୍ତନରେ ପ୍ରୋଟିନ ଗଠନ ନଷ୍ଟ |" }
+                ],
+                mcq: [
+                    { q: "What are proteins made of?", opts: ["Simple sugars","Fatty acids","Amino acids","Glycerol"], ans: 2 },
+                    { q: "How many common amino acids are found in proteins?", opts: ["10","15","20","25"], ans: 2 },
+                    { q: "Essential amino acids are those that:", opts: ["The body can make","Must be obtained from food","Are not needed","Are stored as fat"], ans: 1 },
+                    { q: "The bond linking two amino acids together is called:", opts: ["Glycosidic bond","Peptide bond","Hydrogen bond","Ionic bond"], ans: 1 },
+                    { q: "A chain of many amino acids is called a:", opts: ["Dipeptide","Polypeptide","Nucleotide","Fatty acid"], ans: 1 },
+                    { q: "The sequence of amino acids in a protein is its:", opts: ["Secondary structure","Tertiary structure","Primary structure","Quaternary structure"], ans: 2 },
+                    { q: "Alpha‑helix and beta‑pleated sheets are examples of:", opts: ["Primary structure","Secondary structure","Tertiary structure","Quaternary structure"], ans: 1 },
+                    { q: "The 3‑D folded shape of a single polypeptide chain is the:", opts: ["Primary structure","Secondary structure","Tertiary structure","Quaternary structure"], ans: 2 },
+                    { q: "Hemoglobin has which level of protein structure?", opts: ["Primary","Secondary","Tertiary","Quaternary"], ans: 3 },
+                    { q: "Which of the following is a function of proteins?", opts: ["Energy storage","Enzymes and hormones","Genetic information","Cell wall structure"], ans: 1 },
+                    { q: "Which food is the richest source of protein?", opts: ["Rice","Apple","Egg","Butter"], ans: 2 },
+                    { q: "Kwashiorkor is caused by deficiency of:", opts: ["Carbohydrates","Fats","Proteins","Vitamins"], ans: 2 },
+                    { q: "Marasmus results from severe deficiency of:", opts: ["Protein and calories","Only protein","Only fat","Only vitamins"], ans: 0 },
+                    { q: "Denaturation of a protein means:", opts: ["Loss of biological activity due to structural change","Building more protein","Addition of amino acids","Breaking peptide bonds"], ans: 0 },
+                    { q: "Which of the following can denature a protein?", opts: ["Cooling","High temperature","Adding water","Dilute salt solution"], ans: 1 },
+                    { q: "A dipeptide consists of:", opts: ["Two amino acids","Two proteins","Two fatty acids","Two sugars"], ans: 0 },
+                    { q: "Collagen is an example of which type of protein?", opts: ["Enzyme","Hormone","Structural protein","Transport protein"], ans: 2 },
+                    { q: "Insulin is a protein that acts as a:", opts: ["Enzyme","Hormone","Antibody","Carrier"], ans: 1 },
+                    { q: "Antibodies are proteins that help in:", opts: ["Digestion","Respiration","Defense against pathogens","Muscle contraction"], ans: 2 },
+                    { q: "The monomers of proteins are:", opts: ["Glucose","Amino acids","Fatty acids","Nucleotides"], ans: 1 },
+                    { q: "How many essential amino acids are there?", opts: ["5","9","15","20"], ans: 1 },
+                    { q: "Peptide bonds form between which groups?", opts: ["–OH and –OH","–COOH and –NH₂","–CH₃ and –CH₃","–SH and –OH"], ans: 1 },
+                    { q: "Which structure is stabilized by hydrogen bonds?", opts: ["Primary","Secondary","Tertiary","Both secondary and tertiary"], ans: 3 },
+                    { q: "Egg white turning solid on boiling is an example of:", opts: ["Hydrolysis","Denaturation","Polymerization","Condensation"], ans: 1 },
+                    { q: "Soybean is a good source of:", opts: ["Animal protein","Plant protein","Only fat","Only carbohydrate"], ans: 1 },
+                    { q: "Which vitamin deficiency can worsen protein malnutrition?", opts: ["Vitamin A","Vitamin C","Vitamin D","Vitamin B complex"], ans: 1 },
+                    { q: "Enzymes are biological catalysts that are chemically:", opts: ["Lipids","Carbohydrates","Proteins","Nucleic acids"], ans: 2 },
+                    { q: "The lock‑and‑key model explains the action of:", opts: ["Hormones","Enzymes","Antibodies","Transport proteins"], ans: 1 },
+                    { q: "Which element is unique to proteins compared to carbohydrates?", opts: ["Carbon","Hydrogen","Nitrogen","Oxygen"], ans: 2 },
+                    { q: "A child with swollen belly and reddish hair likely has:", opts: ["Marasmus","Kwashiorkor","Obesity","Diabetes"], ans: 1 }
+                ],
+                hot: [
+                    { q: "Why are proteins considered the 'building blocks' of the body?", opts: ["They provide energy","They form structures and enzymes","They store genetic info","They are fats"], ans: 1 },
+                    { q: "If a person's diet lacks essential amino acids, what might happen?", opts: ["Increased energy","Impaired growth and repair","Better digestion","Stronger bones"], ans: 1 },
+                    { q: "How does boiling an egg change the protein?", opts: ["Breaks peptide bonds","Denatures the protein, changing its shape","Adds new amino acids","Makes it a carbohydrate"], ans: 1 },
+                    { q: "Why is it important to have both essential and non‑essential amino acids?", opts: ["Non‑essential are not needed","To synthesize all required proteins","Essential are more important","Non‑essential provide energy"], ans: 1 },
+                    { q: "What could happen if a single amino acid is misplaced in a protein's primary structure?", opts: ["Nothing","The protein may malfunction","It becomes a carbohydrate","It replicates"], ans: 1 },
+                    { q: "How does hemoglobin's quaternary structure help its function?", opts: ["It binds oxygen cooperatively","It digests food","It stores energy","It fights infection"], ans: 0 },
+                    { q: "Why does denaturation usually inactivate an enzyme?", opts: ["It breaks the active site's shape","It adds energy","It removes the cofactor","It increases temperature"], ans: 0 },
+                    { q: "How can vegetarian diets provide all essential amino acids?", opts: ["By eating only grains","By combining grains and legumes (e.g., rice & dal)","By eating fruits","By drinking milk only"], ans: 1 },
+                    { q: "Why is kwashiorkor more common in children after weaning?", opts: ["They eat too much protein","Their diet lacks sufficient protein","They exercise more","They drink too much water"], ans: 1 },
+                    { q: "What would happen if the peptide bond formation is blocked in a cell?", opts: ["More proteins","No protein synthesis","More DNA","Increased energy"], ans: 1 },
+                    { q: "Why does hair contain a high amount of a protein called keratin?", opts: ["For energy","For structural strength","For digestion","For transport"], ans: 1 },
+                    { q: "How does the body use dietary protein differently from carbohydrates?", opts: ["For immediate energy only","Mainly for growth and repair","Stored as glycogen","Converted to vitamins"], ans: 1 },
+                    { q: "Why might a marathon runner need more protein than a sedentary person?", opts: ["To repair muscle damage","To store as fat","To slow down","To reduce weight"], ans: 0 },
+                    { q: "What is the biochemical consequence of a missing enzyme in a metabolic pathway?", opts: ["Build‑up of substrate, lack of product","No change","More energy","Faster reactions"], ans: 0 },
+                    { q: "Why is it dangerous to consume extremely high temperatures‑treated proteins regularly?", opts: ["Denatured proteins lose function and may form harmful compounds","They taste better","They become vitamins","They improve digestion"], ans: 0 },
+                    { q: "How does the body prioritize protein use during starvation?", opts: ["Uses proteins for energy after fats","Never uses protein","Only uses carbohydrates","Stops all functions"], ans: 0 },
+                    { q: "Why are enzymes specific to substrates?", opts: ["Due to the unique shape of their active site","They are lipids","They are small","They have no shape"], ans: 0 },
+                    { q: "If a person has a genetic disorder that alters collagen structure, which tissue is most affected?", opts: ["Skin and bones","Liver","Brain","Lungs"], ans: 0 },
+                    { q: "Why does milk turn into curd when lemon juice is added?", opts: ["The acid denatures casein protein, causing it to coagulate","It boils","It becomes sweet","It evaporates"], ans: 0 },
+                    { q: "Explain why a diet adequate in calories but poor in protein can still cause malnutrition.", opts: ["Calories alone can't build body tissues","It causes obesity","It improves muscles","It enhances immunity"], ans: 0 }
+                ]
+            },
+            odia: {
+                concepts: [],
+                mcq: [
+                    { q: "ପ୍ରୋଟିନ କ'ଣରେ ଗଠିତ?", opts: ["ସରଳ ଶର୍କରା","ଫ୍ୟାଟି ଏସିଡ","ଆମିନୋ ଏସିଡ","ଗ୍ଲିସେରଲ"], ans: 2 },
+                    { q: "ପ୍ରୋଟିନରେ କେତୋଟି ସାଧାରଣ ଆମିନୋ ଏସିଡ ଥାଏ?", opts: ["୧୦","୧୫","୨୦","୨୫"], ans: 2 },
+                    { q: "ଅତ୍ୟାବଶ୍ୟକ ଆମିନୋ ଏସିଡ:", opts: ["ଶରୀର ତିଆରି କରେ","ଖାଦ୍ୟରୁ ମିଳିବା ଜରୁରୀ","ଦରକାର ନାହିଁ","ଚର୍ବି ଭାବରେ ଜମା"], ans: 1 },
+                    { q: "ଦୁଇ ଆମିନୋ ଏସିଡକୁ ଯୋଡ଼ୁଥିବା ବନ୍ଧ:", opts: ["ଗ୍ଲାଇକୋସିଡିକ","ପେପଟାଇଡ","ହାଇଡ୍ରୋଜେନ","ଆୟନିକ"], ans: 1 },
+                    { q: "ଅନେକ ଆମିନୋ ଏସିଡର ଶୃଙ୍ଖଳକୁ କ'ଣ କୁହାଯାଏ?", opts: ["ଡାଇପେପ","ପଲିପେପ","ନ୍ୟୁ","ଫ୍ୟ"], ans: 1 },
+                    { q: "ପ୍ରୋଟିନର ଆମିନୋ ଏସିଡ ଅନୁକ୍ରମ ଏହାର:", opts: ["ଦ୍ୱିତୀୟ","ତୃତୀୟ","ପ୍ରାଥମିକ","ଚତୁର୍ଥ"], ans: 2 },
+                    { q: "ଆଲଫା-ହେଲିକ୍ସ ଓ ବିଟା-ପତ୍ର:", opts: ["ପ୍ରା","ଦ୍ୱି","ତୃ","ଚ"], ans: 1 },
+                    { q: "ଏକ ପଲିପେପଟାଇଡର 3D ଆକାର:", opts: ["ପ୍ରା","ଦ୍ୱି","ତୃ","ଚ"], ans: 2 },
+                    { q: "ହିମୋଗ୍ଲୋବିନର ଗଠନ:", opts: ["ପ୍ରା","ଦ୍ୱି","ତୃ","ଚ"], ans: 3 },
+                    { q: "ପ୍ରୋଟିନର କାର୍ଯ୍ୟ:", opts: ["ଶ","ଏ","ଜ","କ"], ans: 1 },
+                    { q: "ସବୁଠୁ ଅଧିକ ପ୍ରୋଟିନ:", opts: ["ଭ","ଆ","ଅ","ବ"], ans: 2 },
+                    { q: "କ୍ୱାସିଓରକର:", opts: ["କ","ଚ","ପ","ଭ"], ans: 2 },
+                    { q: "ମାରାସମସ:", opts: ["ପ+","କ","ଚ","ଭ"], ans: 0 },
+                    { q: "ପ୍ରୋଟିନ ବିକୃତ:", opts: ["ଗ","ତି","ଯ","ଭ"], ans: 0 },
+                    { q: "ପ୍ରୋଟିନ ବିକୃତ:", opts: ["ଥ","ଉ","ପ","ଲ"], ans: 1 },
+                    { q: "ଡାଇ:", opts: ["2","2","2","2"], ans: 0 },
+                    { q: "କୋ:", opts: ["ଏ","ହ","ଗ","ପ"], ans: 2 },
+                    { q: "ଇ:", opts: ["ଏ","ହ","ଆ","କ"], ans: 1 },
+                    { q: "ଆ:", opts: ["ପ","ଶ","ର","ମ"], ans: 2 },
+                    { q: "ମ:", opts: ["ଗ","ଆ","ଫ","ନ"], ans: 1 },
+                    { q: "କ:", opts: ["5","9","15","20"], ans: 1 },
+                    { q: "ପ:", opts: ["-OH","-COOH","-CH₃","-SH"], ans: 1 },
+                    { q: "ଦ:", opts: ["ପ୍ର","ଦ୍","ତ","ଦ+ତ"], ans: 3 },
+                    { q: "ଅ:", opts: ["ଜ","ବ","ପ","ସ"], ans: 1 },
+                    { q: "ସ:", opts: ["ପ୍ରା","ଉ","କ","ଶ"], ans: 1 },
+                    { q: "ପ:", opts: ["A","C","D","B"], ans: 1 },
+                    { q: "ଏ:", opts: ["ଲ","କ","ପ","ନ"], ans: 2 },
+                    { q: "ଲ:", opts: ["ହ","ଏ","ଆ","ପ"], ans: 1 },
+                    { q: "ପ:", opts: ["C","H","N","O"], ans: 2 },
+                    { q: "ଶ:", opts: ["ମ","କ","ମ","ମ"], ans: 1 }
+                ],
+                hot: [
+                    { q: "ପ୍ରୋଟିନକୁ 'ବିଲ୍ଡିଂ ବ୍ଲକ' କାହିଁକି?", opts: ["ଶ","ଗ","ଜ","ଚ"], ans: 1 },
+                    { q: "ଅତ୍ୟ:", opts: ["ଶ","ଅ","ଭ","ହ"], ans: 1 },
+                    { q: "ଅ:", opts: ["ପ","ପ","ନ","କ"], ans: 1 },
+                    { q: "ଉ:", opts: ["ଅ","ସ","ଅ","ଅ"], ans: 1 },
+                    { q: "ଗ:", opts: ["କ","ପ","କ","ପ"], ans: 1 },
+                    { q: "ହ:", opts: ["ସ","ପ","ସ","ପ"], ans: 0 },
+                    { q: "ବ:", opts: ["ଆ","ଶ","ସ","ଉ"], ans: 0 },
+                    { q: "ନି:", opts: ["ଶ","ଶ","ଫ","ଦ"], ans: 1 },
+                    { q: "କ:", opts: ["ଅ","ପ","ଅ","ପ"], ans: 1 },
+                    { q: "ପ:", opts: ["ଅ","ପ","ଅ","ଶ"], ans: 1 },
+                    { q: "କ:", opts: ["ଶ","ଗ","ପ","ପ"], ans: 1 },
+                    { q: "ଶ:", opts: ["ଶ","ମ","ଗ","ଭ"], ans: 1 },
+                    { q: "ଦ:", opts: ["ମ","ମ","ଜ","ଓ"], ans: 0 },
+                    { q: "ଗ:", opts: ["ଜ","ପ","ଅ","ଅ"], ans: 0 },
+                    { q: "ଉ:", opts: ["ଅ","ବ","ସ","ପ"], ans: 0 },
+                    { q: "ଅ:", opts: ["ପ","ପ","କ","ବ"], ans: 0 },
+                    { q: "ଏ:", opts: ["ଆ","ଲ","ଛ","ଆ"], ans: 0 },
+                    { q: "କ:", opts: ["ତ","ଯ","ମ","ଫ"], ans: 0 },
+                    { q: "ଦ:", opts: ["ଅ","କ","ମ","ବ"], ans: 0 },
+                    { q: "କ:", opts: ["କ","ମ","ଅ","ପ"], ans: 0 }
+                ]
+            }
+        };
+
+        let currentLang = 'english';
+
+        function renderConcepts() {
+            const grid = document.getElementById('flashcardContainer');
+            grid.innerHTML = '';
+            DATA.english.concepts.forEach(item => {
+                const container = document.createElement('div');
+                container.className = 'flip-container';
+
+                const flipper = document.createElement('div');
+                flipper.className = 'flipper';
+
+                const front = document.createElement('div');
+                front.className = 'front';
+                front.innerHTML = `<div>${item.eng}</div><div class="flip-instruction">Tap to see Odia</div>`;
+
+                const back = document.createElement('div');
+                back.className = 'back';
+                back.innerHTML = item.odia;
+
+                flipper.appendChild(front);
+                flipper.appendChild(back);
+                container.appendChild(flipper);
+
+                flipper.addEventListener('click', function(e) {
+                    this.classList.toggle('flipped');
+                });
+
+                grid.appendChild(container);
+            });
+        }
+
+        class QuizEngine {
+            constructor(type) {
+                this.type = type;
+                this.total = type === 'mcq' ? 30 : 20;
+                this.idx = 0;
+                this.score = 0;
+                this.answered = false;
+                this.active = false;
+                this.el = {
+                    score: document.getElementById(`${type}ScoreDisplay`),
+                    cur: document.getElementById(`${type}CurrentQ`),
+                    qText: document.getElementById(`${type}QuestionText`),
+                    opts: document.getElementById(`${type}Options`),
+                    next: document.getElementById(`${type}NextBtn`),
+                    restart: document.getElementById(`${type}RestartBtn`),
+                    resultDiv: document.getElementById(`${type}Result`),
+                    final: document.getElementById(`${type}FinalScore`),
+                    again: document.getElementById(`${type}AgainBtn`),
+                    nav: document.getElementById(`${type}Nav`),
+                    container: document.getElementById(`${type}QuestionContainer`)
+                };
+                this.el.next.addEventListener('click', ()=>this.next());
+                this.el.restart.addEventListener('click', ()=>this.restart());
+                this.el.again.addEventListener('click', ()=>this.restart());
+            }
+
+            get questions() { return DATA[currentLang][this.type]; }
+
+            start() {
+                this.active = true;
+                this.idx = 0;
+                this.score = 0;
+                this.answered = false;
+                this.el.resultDiv.classList.add('hidden');
+                this.el.nav.classList.remove('hidden');
+                this.el.container.classList.remove('hidden');
+                this.render();
+                this.el.next.disabled = true;
+                this.el.score.textContent = '0';
+            }
+
+            render() {
+                const q = this.questions[this.idx];
+                if (!q) { this.showResult(); return; }
+                this.el.qText.textContent = q.q;
+                this.el.opts.innerHTML = '';
+                this.answered = false;
+                this.el.next.disabled = true;
+                q.opts.forEach((opt, i) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn';
+                    btn.textContent = opt;
+                    btn.addEventListener('click', () => this.select(i, btn));
+                    this.el.opts.appendChild(btn);
+                });
+                this.el.cur.textContent = this.idx + 1;
+            }
+
+            select(idx, btn) {
+                if (this.answered) return;
+                this.answered = true;
+                const correct = this.questions[this.idx].ans;
+                const all = this.el.opts.querySelectorAll('.option-btn');
+                all.forEach(b => b.classList.remove('selected','correct','incorrect'));
+                btn.classList.add('selected');
+                if (idx === correct) {
+                    btn.classList.add('correct');
+                    this.score++;
+                } else {
+                    btn.classList.add('incorrect');
+                    all[correct].classList.add('correct');
+                }
+                this.el.score.textContent = this.score;
+                this.el.next.disabled = false;
+            }
+
+            next() {
+                if (!this.answered) return;
+                this.idx++;
+                if (this.idx < this.questions.length) this.render();
+                else this.showResult();
+            }
+
+            showResult() {
+                this.el.container.classList.add('hidden');
+                this.el.nav.classList.add('hidden');
+                this.el.resultDiv.classList.remove('hidden');
+                this.el.final.textContent = this.score;
+            }
+
+            restart() { this.start(); }
+        }
+
+        const mcq = new QuizEngine('mcq');
+        const hot = new QuizEngine('hot');
+
+        const pages = ['video','concept','mcq','hot'];
+        let curPage = 0;
+        const pageDivs = {
+            video: document.getElementById('videoPage'),
+            concept: document.getElementById('conceptPage'),
+            mcq: document.getElementById('mcqPage'),
+            hot: document.getElementById('hotPage')
+        };
+        const prevBtn = document.getElementById('prevPageBtn');
+        const nextBtn = document.getElementById('nextPageBtn');
+        const pageTitle = document.getElementById('pageTitle');
+        const langToggles = document.getElementById('langToggles');
+        const langEn = document.getElementById('langEn');
+        const langOd = document.getElementById('langOd');
+
+        function updateLangUI() {
+            langEn.classList.toggle('active', currentLang === 'english');
+            langOd.classList.toggle('active', currentLang === 'odia');
+        }
+
+        function switchLanguage(lang) {
+            if (currentLang === lang) return;
+            currentLang = lang;
+            updateLangUI();
+            if (curPage === 2) mcq.restart();
+            else if (curPage === 3) hot.restart();
+        }
+
+        langEn.addEventListener('click', () => switchLanguage('english'));
+        langOd.addEventListener('click', () => switchLanguage('odia'));
+
+        function showPage(i) {
+            Object.values(pageDivs).forEach(p => p.classList.remove('active'));
+            pageDivs[pages[i]].classList.add('active');
+            pageTitle.textContent = ['Video','Flip Cards','MCQ (30)','HOT (20)'][i];
+            prevBtn.disabled = i === 0;
+            nextBtn.disabled = i === pages.length-1;
+
+            if (i === 0 || i === 1) {
+                langToggles.classList.add('hidden');
+            } else {
+                langToggles.classList.remove('hidden');
+            }
+
+            if (i === 1) renderConcepts();
+            else if (i === 2 && !mcq.active) mcq.start();
+            else if (i === 3 && !hot.active) hot.start();
+            updateLangUI();
+        }
+
+        prevBtn.addEventListener('click', ()=>{
+            if (curPage > 0) { curPage--; showPage(curPage); }
+        });
+        nextBtn.addEventListener('click', ()=>{
+            if (curPage < pages.length-1) { curPage++; showPage(curPage); }
+        });
+
+        showPage(0);
+    })();
+</script>
+</body>
+</html>
